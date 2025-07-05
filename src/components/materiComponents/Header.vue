@@ -135,7 +135,7 @@ const scrollToTop = () => {
 /* Font */
 .logofont {
   font-family: "woblofont", sans-serif;
-  font-size: 2rem;
+  font-size: 1rem;
 }
 
 @font-face {

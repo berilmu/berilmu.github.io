@@ -33,6 +33,9 @@ export const useLessonStore = defineStore("lesson", {
 
     getLesson: (state) => (path, slug) => {
       const data = state.lessons.find((item) => item.path === path);
+      if (data === undefined) {
+        return null;
+      }
       return data.levels.find((item) => item.slug === slug);
       // return dataMentah.find((item) => item.slug === slug);
     },

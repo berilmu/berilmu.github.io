@@ -1,31 +1,38 @@
+// File: src/views/DetailLevel.vue
 <script setup>
-// header
 import Header from "../components/levelDetailComponents/Header.vue";
 import Hero from "../components/levelDetailComponents/HeroComponent.vue";
 import ProgresBar from "../components/levelDetailComponents/ProgressBar.vue";
 import card from "../components/levelDetailComponents/CardDetailLevel.vue";
 import BottomNav from "../components/navComponents/BottomNav.vue";
 
-import { computed } from "vue";
-
-// ambil data di router
+import { computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 const route = useRoute();
 const mapel = route.params.mapel;
 const slug = route.params.slugmateri;
 
-// lesson store
+
+// Ambil data lesson dari store
+import { loadLessonsFromSupabase } from "../service/fetchDummyLesson";
 import { useLessonStore } from "@/stores/LessonStore";
 const storeLesson = useLessonStore();
+// Reactive: ambil data dari store berdasarkan mapel dan slug
 const data = computed(() => storeLesson.getLesson(mapel, slug));
+console.log("data", data.value);
 
-// ambil data
-import { onMounted } from "vue";
+// Jika data tidak ditemukan
+const isDataKosong = computed(() => !data.value);
+if (isDataKosong.value) {
+  // isi data lesson
+  loadLessonsFromSupabase();
+}
+const dataJudul = computed(() => data.value?.judul || "");
+
 import { useFetchMaterialLessons } from "@/stores/compossable/useFetchMaterialLessons";
 import { useMaterialLessonStore } from "@/stores/materialLessonStore";
 const { fetchLessons, loading, error } = useFetchMaterialLessons();
 const storeMaterialLesson = useMaterialLessonStore();
-
 const lessonId = route.params.id;
 
 onMounted(() => {
@@ -54,10 +61,13 @@ onMounted(() => {
           class="list-group-item list-group-item-action"
           :to="{
             path: `/${mapel}/${item.lastgroup ? 'show' : 'd'}/${item.id}`,
-            query: { needData: JSON.stringify(item.needData) },
+            query: {
+              needData: JSON.stringify(item.needData),
+              judulGlobal: dataJudul,
+              judulItem: item.name,
+            },
           }"
         >
-          {{ item.needData }}
           <card
             :id="item.id"
             :deskripsi="item.description"
@@ -65,7 +75,8 @@ onMounted(() => {
             :gambar="item.logo_picture"
             :progres="item.presentase"
             :lastgroup="item.lastgroup"
-        /></router-link>
+          />
+        </router-link>
       </div>
     </div>
     <BottomNav class="bottomnav" :home="mapel" />
@@ -73,12 +84,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Sticky Header */
 .sticky-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: white; /* atau ganti sesuai warna header */
+  background-color: white;
 }
 @media (min-width: 768px) {
   .bottomnav {
