@@ -31,8 +31,8 @@ import StrokeCanvas from "./StrokeCanvas.vue";
 const emit = defineEmits(["finished"]);
 
 const props = defineProps({
-  strokesData: Array, // ← array path SVG
-  reviewData: Object, // ← jika ada, tampilkan hasil review
+  strokesData: Array,
+  reviewData: Object,
   size: { type: Number, default: 256 },
   viewBox: { type: Number, default: 24 },
   trial: { type: Number, default: 3 },
@@ -57,31 +57,25 @@ const canvas = ref(null);
 const attempts = ref(0);
 const wrongStrokes = ref([]);
 
-// Cek apakah mode review
-// const isReview = computed(() => props.reviewData != null);
-const isReview = props.reviewData != null;
-console.log("isi isReview nih", isReview);
+const isReview = computed(() =>
+  props.reviewData && Array.isArray(props.reviewData?.wrongStrokes)
+);
 
 const strokes = ref([]);
 
-/**
- * Fungsi untuk menghasilkan array stroke dengan warna (baik normal, review, atau latihan)
- */
-function initStrokes(review = null) {
-  if (isReview) {
-    if (props.reviewData) {
-      return props.strokesData.map((path, i) => ({
-        path,
-        color: props.reviewData.wrongStrokes.includes(i)
-          ? props.wrongColor
-          : props.finishColor,
-      }));
-    }
+function initStrokes() {
+  if (isReview.value) {
+    return props.strokesData.map((path, i) => ({
+      path,
+      color: props.reviewData.wrongStrokes.includes(i)
+        ? props.wrongColor
+        : props.finishColor,
+    }));
   }
 
   return props.strokesData.map((path, i) => ({
     path,
-    color: i === 0 ? props.defaultColor : props.defaultColor,
+    color: props.defaultColor,
   }));
 }
 
@@ -119,7 +113,6 @@ function isSimilarPath(userPath, refPath) {
   }
 
   const avgDist = totalDist / minLen;
-  console.log(avgDist);
   return !(avgDist > props.avgsdH || avgDist < props.avgsdL);
 }
 

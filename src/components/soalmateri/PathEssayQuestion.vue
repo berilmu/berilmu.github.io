@@ -23,7 +23,7 @@
         <button
           @click="submitAnswer"
           class="bg-green-500 text-white px-4 py-2 rounded"
-          :disabled="isAnswered"
+          :disabled="isAnswered || userAnswer.trim() === ''"
         >
           Submit
         </button>
@@ -46,8 +46,8 @@
 <script setup>
 import { ref, watch, onMounted } from "vue";
 import StrokeSvg from "../vueWritter/StrokeSvg.vue";
+import { useSoalStore } from "@/stores/soalStore";
 
-import { useSoalStore } from "@/stores/soalStore"; // atau sesuaikan path-nya
 const soalStore = useSoalStore();
 
 const props = defineProps({
@@ -56,63 +56,65 @@ const props = defineProps({
   NomorSoal: Number,
 });
 
-// **Reset local state tiap kali soal atau jawaban awal berubah**
-watch(
-  () => props.NomorSoal,
-  () => {
-    if (props.jawaban != null) {
-      isAnswered.value = true;
-      showResult.value = true;
-      isCorrect.value = props.jawaban.hasil;
-      userAnswer.value = props.jawaban.answer;
-    } else {
-      userAnswer.value = "";
-      showResult.value = false;
-      isAnswered.value = false;
-    }
-  }
-);
-
-// Saat mount
-onMounted(() => {
-  if (props.jawaban != null) {
-    isAnswered.value = true;
-    showResult.value = true;
-    isCorrect.value = props.jawaban.hasil;
-    userAnswer.value = props.jawaban.answer;
-    emit("answered", isAnswered.value); // Emit event ke parent
-  } else {
-    userAnswer.value = "";
-    showResult.value = false;
-    isAnswered.value = false;
-  }
-});
-
-const emit = defineEmits(["answered"]); // Emit event for answered status
+const emit = defineEmits(["answered"]);
 
 const userAnswer = ref("");
 const showResult = ref(false);
 const isCorrect = ref(false);
-const isAnswered = ref(false); // Menyimpan status apakah soal sudah dijawab
+const isAnswered = ref(false);
+
+function isJawabanValid(jawaban) {
+  return (
+    jawaban &&
+    typeof jawaban.answer === "string" &&
+    jawaban.answer.trim().length > 0
+  );
+}
+
+function resetState() {
+  const jawaban = props.jawaban;
+
+  if (isJawabanValid(jawaban)) {
+    isAnswered.value = true;
+    showResult.value = true;
+    isCorrect.value = jawaban.hasil;
+    userAnswer.value = jawaban.answer;
+    emit("answered", true); // Hanya emit kalau memang sudah dijawab valid
+  } else {
+    isAnswered.value = false;
+    showResult.value = false;
+    isCorrect.value = false;
+    userAnswer.value = "";
+    emit("answered", false); // Kasih tahu parent bahwa soal belum dijawab
+  }
+}
+
+watch(
+  () => props.NomorSoal,
+  () => {
+    resetState();
+  }
+);
+
+onMounted(() => {
+  resetState();
+});
 
 function submitAnswer() {
-  showResult.value = true;
-  isCorrect.value =
+  const correct =
     userAnswer.value.trim().toLowerCase() ===
     props.question.jawaban.toLowerCase();
-  isAnswered.value = true; // Menandakan soal sudah dijawab
-  emit("answered", isAnswered.value); // Emit event ke parent
-  simpanJawabanKeStore(props.NomorSoal, {
+
+  isCorrect.value = correct;
+  isAnswered.value = true;
+  showResult.value = true;
+
+  soalStore.setJawabanUser(props.NomorSoal, {
     hasil: isCorrect.value,
     answer: userAnswer.value,
   });
-}
 
-function simpanJawabanKeStore(nomor, jawaban) {
-  console.log("Jawaban disimpan");
-  console.log("nomor yang disimpan", nomor);
-
-  soalStore.setJawabanUser(nomor, jawaban);
+  emit("answered", true);
 }
 </script>
 

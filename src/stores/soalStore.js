@@ -6,6 +6,7 @@ export const useSoalStore = defineStore("soal", {
     soal: [],
     lastIndex: 0,
     jawabanUser: {},
+    isFinish: null, // ✅ tambahkan state baru
   }),
 
   getters: {
@@ -30,6 +31,12 @@ export const useSoalStore = defineStore("soal", {
     },
     getIndex: (state) => {
       return state.lastIndex;
+    },
+    getIsFinish: (state) => {
+      if (state.isFinish === null) {
+        return false;
+      }
+      return state.isFinish;
     },
     isSemuaJawabanLengkap() {
       const semuaNomorSoal = this.soal.map((item) => item.nomor);
@@ -60,6 +67,7 @@ export const useSoalStore = defineStore("soal", {
 
       this.jawabanUser[nomor] = jawaban;
     },
+
     updateJawabanUserPartial(nomor, perubahan) {
       if (!this.jawabanUser[nomor]) {
         console.error(`Jawaban untuk nomor ${nomor} tidak ditemukan.`);
@@ -76,6 +84,7 @@ export const useSoalStore = defineStore("soal", {
         ...perubahan,
       };
     },
+
     resetJawabanUser() {
       this.jawabanUser = {};
     },
@@ -116,7 +125,6 @@ export const useSoalStore = defineStore("soal", {
       });
     },
 
-    // ✅ Ganti seluruh soal dan atur ulang nomor
     gantiSemuaSoal(daftarSoal) {
       if (!Array.isArray(daftarSoal)) {
         console.error("Input harus berupa array.");
@@ -128,11 +136,9 @@ export const useSoalStore = defineStore("soal", {
         nomor: index + 1,
       }));
 
-      // Reset jawaban juga karena soal berubah
       this.resetJawabanUser();
     },
 
-    // ✅ Set ID soal
     setId(idBaru) {
       if (typeof idBaru !== "string" || idBaru.trim() === "") {
         console.error("ID harus berupa string yang valid.");
@@ -141,12 +147,21 @@ export const useSoalStore = defineStore("soal", {
       this.id = idBaru;
     },
 
-    // ✅ Ambil ID (alternatif ke getter getId)
     ambilId() {
       return this.id;
     },
+
     setIndex(indexnya) {
       this.lastIndex = indexnya;
+    },
+
+    // ✅ Tambahkan setter isFinish
+    setIsFinish(status) {
+      if (typeof status !== "boolean") {
+        console.error("isFinish harus boolean.");
+        return;
+      }
+      this.isFinish = status;
     },
   },
 });
