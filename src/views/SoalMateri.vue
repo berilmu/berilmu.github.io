@@ -195,56 +195,58 @@ function handleAnswered(status) {
 </script>
 
 <template>
-  <div style="height: 15%">
-    <Header />
+  <div>
+    <div style="height: 15%">
+      <Header />
+    </div>
+
+    <!-- Menampilkan soal aktif berdasarkan currentSoalIndex -->
+    <div v-if="jumlahSoal > 0" style="height: 85%; justify-items: center">
+      <!-- Komponen berdasarkan tipe -->
+      <PathEssayQuestion
+        v-if="currentSoal.tipe === 'esay-singkat-stroke'"
+        :question="currentSoal"
+        :-nomor-soal="currentSoalIndex + 1"
+        :jawaban="currenAnswer"
+        @answered="handleAnswered"
+      />
+
+      <AngkaStrokeWriter
+        v-if="currentSoal.tipe === 'menulis-stroke-angka'"
+        :question="currentSoal"
+        :-nomor-soal="currentSoalIndex + 1"
+        :jawaban="currenAnswer"
+        @answered="handleAnswered"
+      />
+
+      <StrokePlayAngka
+        v-if="currentSoal.tipe === 'play-stroke-angka'"
+        :question="currentSoal"
+        :-nomor-soal="currentSoalIndex + 1"
+        :jawaban="currenAnswer"
+        @answered="handleAnswered"
+      />
+      <!-- Tambah tipe lain jika ada -->
+      <!-- <div v-else>
+          <p class="text-red-500">Tipe soal belum didukung: {{ currentSoal.tipe }}</p>
+        </div> -->
+    </div>
+
+    <!-- Tombol Next untuk berpindah soal -->
+    <NextButton
+      text="Next"
+      v-if="isAnswered && !(jumlahSoal - 1 == currentSoalIndex)"
+      @click="nextSoal"
+      :disabled="currentSoalIndex === jumlahSoal - 1"
+    />
+    <NextButton
+      text="Finish"
+      @click="goBack"
+      v-else-if="isAnswered && jumlahSoal - 1 == currentSoalIndex"
+      :disabled="currentSoalIndex === jumlahSoal - 1"
+    />
+    <!-- </div> -->
   </div>
-
-  <!-- Menampilkan soal aktif berdasarkan currentSoalIndex -->
-  <div v-if="jumlahSoal > 0" style="height: 85%; justify-items: center">
-    <!-- Komponen berdasarkan tipe -->
-    <PathEssayQuestion
-      v-if="currentSoal.tipe === 'esay-singkat-stroke'"
-      :question="currentSoal"
-      :-nomor-soal="currentSoalIndex + 1"
-      :jawaban="currenAnswer"
-      @answered="handleAnswered"
-    />
-
-    <AngkaStrokeWriter
-      v-if="currentSoal.tipe === 'menulis-stroke-angka'"
-      :question="currentSoal"
-      :-nomor-soal="currentSoalIndex + 1"
-      :jawaban="currenAnswer"
-      @answered="handleAnswered"
-    />
-
-    <StrokePlayAngka
-      v-if="currentSoal.tipe === 'play-stroke-angka'"
-      :question="currentSoal"
-      :-nomor-soal="currentSoalIndex + 1"
-      :jawaban="currenAnswer"
-      @answered="handleAnswered"
-    />
-    <!-- Tambah tipe lain jika ada -->
-    <!-- <div v-else>
-        <p class="text-red-500">Tipe soal belum didukung: {{ currentSoal.tipe }}</p>
-      </div> -->
-  </div>
-
-  <!-- Tombol Next untuk berpindah soal -->
-  <NextButton
-    text="Next"
-    v-if="isAnswered && !(jumlahSoal - 1 == currentSoalIndex)"
-    @click="nextSoal"
-    :disabled="currentSoalIndex === jumlahSoal - 1"
-  />
-  <NextButton
-    text="Finish"
-    @click="goBack"
-    v-else-if="isAnswered && jumlahSoal - 1 == currentSoalIndex"
-    :disabled="currentSoalIndex === jumlahSoal - 1"
-  />
-  <!-- </div> -->
 </template>
 
 <style scoped>
